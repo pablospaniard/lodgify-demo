@@ -6,14 +6,15 @@ import {Todo} from '../Todo'
 export default class App extends Component {
   state = {
     todo: '',
-    todos: [{text: 'Add your first todo'}]
+    todos: [{text: 'Add your first todo'}],
+    counter: 1
   }
 
   componentDidUpdate = (prevProps, prevState) => {
     const {todos: prevTodos} = prevState
     const {todos} = this.state
     if (prevTodos.length !== todos.length) {
-      document.querySelector('#counter').innerText = todos.length
+      this.setState({counter: todos.length})
     }
   }
 
@@ -21,11 +22,10 @@ export default class App extends Component {
 
   handleClickAdd = () => {
     const {todo, todos} = this.state
-    todo && this.setState({todos: [...todos, {text: todo}]})
+    todo && this.setState({todos: [...todos, {text: todo}], todo: ''})
   }
 
   handleClickDelete = index => {
-    console.log(`Deleting todo number ${index}`)
     const {todos} = this.state
     this.setState({
       todos: [...todos.slice(0, index), ...todos.slice(index + 1)]
@@ -34,26 +34,27 @@ export default class App extends Component {
 
   render() {
     this.state.todos.forEach((todo, index) => {
-      this.state.todos[index] = {todo, id: uniqueId()}
+      this.state.todos[index] = {text: todo.text, id: uniqueId()}
     })
-    const {todo, todos} = this.state
+    const {todo, todos, counter} = this.state
+
+    const list = todos.length
+      ? todos.map((todo, index) => (
+          <Todo
+            key={todo.id}
+            onClickDelete={() => this.handleClickDelete(index)}
+            text={todo.text}
+          />
+        ))
+      : "You're all done 🌴"
+
     return (
       <div className="todo-list">
         <h1>todos</h1>
         <p>
-          <span id="counter">1</span> remaining
+          <span>{`${counter} remaining`}</span>
         </p>
-        <div>
-          {todos.length
-            ? todos.map((todo, index) => (
-                <Todo
-                  key={todo.id}
-                  onClickDelete={() => this.handleClickDelete(index)}
-                  text={todo.text}
-                />
-              ))
-            : "You're all done 🌴"}
-        </div>
+        <div>{list}</div>
         <div className="todo-input">
           <input
             onChange={this.handleChange}
